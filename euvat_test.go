@@ -39,7 +39,7 @@ func TestReturnsJsonStandardRateWithValidLowerCaseCountryCode(t *testing.T) {
 }
 
 
-func TestReturns404IfYouSayNothing(t *testing.T) {
+func TestReturns400IfYouSayNothing(t *testing.T) {
   handler := new(CountryCodeHandler)
 
   recorder := httptest.NewRecorder()
@@ -49,10 +49,24 @@ func TestReturns404IfYouSayNothing(t *testing.T) {
 
   handler.ServeHTTP(recorder, req)
 
-  assert.Equal(t, 404, recorder.Code)
+  assert.Equal(t, 400, recorder.Code)
 }
 
-func TestReturns404IfCountryNotPresent(t *testing.T) {
+func TestReturns400IfYouGiveAnInvalidStringAsCountryCode(t *testing.T) {
+  handler := new(CountryCodeHandler)
+  invalidCountryCode := "ABC"
+
+  recorder := httptest.NewRecorder()
+
+  req, err := http.NewRequest("GET", fmt.Sprintf("http://example.com/%s", invalidCountryCode), nil)
+  assert.Nil(t, err)
+
+  handler.ServeHTTP(recorder, req)
+
+  assert.Equal(t, 400, recorder.Code)
+}
+
+func TestReturns404IfCountryNotInEu(t *testing.T) {
   handler := new(CountryCodeHandler)
   countryCode := "US"
 

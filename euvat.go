@@ -4,6 +4,7 @@ import (
     "fmt"
     "net/http"
     "strings"
+    "regexp"
 )
 
 var rates = map[string]string{
@@ -41,12 +42,15 @@ type CountryCodeHandler struct{}
 
 func (e CountryCodeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     country_code := strings.ToUpper(r.URL.Path[1:])
+    valid_country_code_matcher := regexp.MustCompile(`\A[a-zA-Z]{2}\z`)
     w.Header().Set("Content-Type", "application/json")
 
     if rate, ok := rates[country_code]; ok {
       fmt.Fprintf(w, "{\"standard_rate\": \"%s\"}", rate )
-    } else {
+    } else if valid_country_code_matcher.MatchString(country_code) {
       http.NotFound(w, r)
+    } else {
+      w.WriteHeader(400)
     }
 }
 
